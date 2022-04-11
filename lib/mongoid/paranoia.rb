@@ -41,16 +41,17 @@ module Mongoid
 
     included do
       field Paranoia.configuration.paranoid_field, as: :deleted_at, type: Time
+      field :deleted, type: Boolean, default: false
 
       self.paranoid = true
 
-      default_scope -> { where(deleted_at: nil) }
-      scope :deleted, -> { ne(deleted_at: nil) }
+      default_scope -> { where(deleted: false) }
+      scope :deleted, -> { where(deleted: true) }
       scope :with_deleted, lambda {
         msg = 'This scope requires Mongoid >= 9 and allow_scopes_to_unset_default_scope to be set to true'
         raise msg unless Mongoid.try(:allow_scopes_to_unset_default_scope)
 
-        criteria.remove_scoping(unscoped.where(deleted_at: nil))
+        criteria.remove_scoping(unscoped.where(deleted: false))
       }
       define_model_callbacks :restore
       define_model_callbacks :remove
@@ -85,7 +86,7 @@ module Mongoid
 
     def remove(_ = {}) # rubocop:disable Naming/PredicateMethod
       time = self.deleted_at = Time.now
-      _paranoia_update('$set' => { paranoid_field => time })
+      _paranoia_update('$set' => { paranoid_field => time, :deleted => true })
       @destroyed = true
       true
     end
@@ -146,7 +147,7 @@ module Mongoid
     # @since 1.0.0
     def restore(opts = {})
       run_callbacks(:restore) do
-        _paranoia_update('$unset' => { paranoid_field => true })
+        _paranoia_update({'$unset' => { paranoid_field => true }, '$set' => { :deleted => false }})
         attributes.delete('deleted_at')
         @destroyed = false
         restore_relations if opts[:recursive]
