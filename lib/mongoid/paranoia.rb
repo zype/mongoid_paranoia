@@ -45,14 +45,15 @@ module Mongoid
 
       self.paranoid = true
 
-      default_scope -> { where(deleted_at: nil) }
-      scope :deleted, -> { ne(deleted_at: nil) }
+      default_scope -> { where(is_deleted: false) }
+      scope :deleted, -> { where(is_deleted: true) }
       scope :with_deleted, lambda {
         msg = 'This scope requires Mongoid >= 9 and allow_scopes_to_unset_default_scope to be set to true'
         raise msg unless Mongoid.try(:allow_scopes_to_unset_default_scope)
 
-        criteria.remove_scoping(unscoped.where(deleted_at: nil))
+        criteria.remove_scoping(unscoped.where(is_deleted: false))
       }
+
       define_model_callbacks :restore
       define_model_callbacks :remove
     end
