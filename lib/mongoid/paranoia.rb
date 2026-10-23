@@ -47,6 +47,14 @@ module Mongoid
 
       default_scope -> { where(is_deleted: false) }
       scope :deleted, -> { where(is_deleted: true) }
+      scope :with_deleted, lambda {
+        msg = 'This scope requires Mongoid >= 9 and allow_scopes_to_unset_default_scope to be set to true'
+        raise msg unless Mongoid.try(:allow_scopes_to_unset_default_scope)
+
+        default = unscoped.where(is_deleted: false)
+        default.inclusions = []
+        criteria.remove_scoping(default)
+      }
 
       define_model_callbacks :restore
       define_model_callbacks :remove
@@ -77,17 +85,17 @@ module Mongoid
     # @return [ true ] True.
     #
     # @since 1.0.0
-    alias :orig_delete :delete
+    alias orig_delete delete
 
-    def remove(_ = {})
+    def remove(_ = {}) # rubocop:disable Naming/PredicateMethod
       time = self.deleted_at = Time.now
       _paranoia_update('$set' => { paranoid_field => time, paranoid_flag => true })
       @destroyed = self.is_deleted = true
       true
     end
 
-    alias :delete :remove
-    alias :delete! :orig_delete
+    alias delete remove
+    alias delete! orig_delete
 
     # Delete the paranoid +Document+ from the database completely. This will
     # run the destroy and remove callbacks.
@@ -142,7 +150,7 @@ module Mongoid
     # @since 1.0.0
     def restore(opts = {})
       run_callbacks(:restore) do
-        _paranoia_update({'$unset' => { paranoid_field => true }, '$set' => { paranoid_flag => false }})
+        _paranoia_update('$unset' => { paranoid_field => true }, '$set' => { paranoid_flag => false })
         attributes.delete('deleted_at')
         @destroyed = self.is_deleted = false
         restore_relations if opts[:recursive]
@@ -199,7 +207,7 @@ module Mongoid
     # @return [ Object ] Update result.
     #
     def _paranoia_update(value)
-      paranoid_collection.find(atomic_selector).update_one(value)
+      paranoid_collection.find(atomic_selector).update_one(value, session: _session)
     end
   end
 end

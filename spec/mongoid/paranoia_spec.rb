@@ -48,7 +48,7 @@ describe Mongoid::Paranoia do
   describe ".scoped" do
 
     it "returns a scoped criteria" do
-      expect(ParanoidPost.scoped.selector).to eq({ "deleted_at" => nil })
+      expect(ParanoidPost.scoped.selector).to eq({ "is_deleted" => false })
     end
   end
 
@@ -95,6 +95,40 @@ describe Mongoid::Paranoia do
       it "returns the correct count" do
         expect(person.paranoid_phones.deleted.count).to eq(1)
       end
+    end
+  end
+
+  describe ".with_deleted" do
+
+    let(:posts) do
+      2.times.map { |i| ParanoidPost.create(title: "testing #{i}") }
+    end
+
+    around do |example|
+      skip unless Mongoid.respond_to?(:allow_scopes_to_unset_default_scope=)
+
+      original_value = Mongoid.allow_scopes_to_unset_default_scope
+      Mongoid.configure { |config| config.allow_scopes_to_unset_default_scope = true }
+
+      example.run
+
+      Mongoid.configure { |config| config.allow_scopes_to_unset_default_scope = original_value }
+    end
+
+    before do
+      posts.first.destroy
+    end
+
+    let(:with_deleted) do
+      ParanoidPost.with_deleted
+    end
+
+    it "returns the deleted documents" do
+      expect(with_deleted).to eq(posts)
+    end
+
+    it "keeps eager loading chained before it" do
+      expect(ParanoidPost.includes(:person).with_deleted.inclusions.map(&:name)).to eq([:person])
     end
   end
 
@@ -316,6 +350,27 @@ describe Mongoid::Paranoia do
 
       it "does not destroy the document" do
         expect(post).not_to be_destroyed
+      end
+    end
+
+    context "when multiple operations wrapped inside transaction" do
+
+      let(:post) do
+        ParanoidPost.create(title: "test")
+      end
+
+      before do
+        post.with_session do |session|
+          session.with_transaction(write_concern: {w: :majority}) do
+            post.set(title: "test_new")
+            post.destroy
+          end
+        end
+      end
+
+      it "should perform operations correct and commit result" do
+        expect(post.title).to eq("test_new")
+        expect(post).to be_destroyed
       end
     end
   end
@@ -814,7 +869,7 @@ describe Mongoid::Paranoia do
     end
 
     it "returns a scoped criteria" do
-      expect(scoped.selector).to eq({ "deleted_at" => nil })
+      expect(scoped.selector).to eq({ "is_deleted" => false })
     end
   end
 

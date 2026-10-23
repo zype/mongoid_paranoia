@@ -11,6 +11,7 @@ end
 
 class Model
   include Mongoid::Document
+
   field :text, type: String
 
   index({ text: 'text' })
@@ -19,6 +20,7 @@ end
 class ParanoidModel
   include Mongoid::Document
   include Mongoid::Paranoia
+
   field :text, type: String
 
   index({ text: 'text' })
@@ -26,6 +28,7 @@ end
 
 class MetaParanoidModel
   include Mongoid::Document
+
   field :text, type: String
   field :deleted_at, type: Time
   default_scope -> { where(deleted_at: nil) }
@@ -35,7 +38,7 @@ end
 
 if ENV['FORCE']
   Mongoid.purge!
-  ::Mongoid::Tasks::Database.create_indexes
+  Mongoid::Tasks::Database.create_indexes
 
   n = 50_000
   n.times {|i| Model.create(text: "text #{i}") }
