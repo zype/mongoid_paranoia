@@ -51,7 +51,9 @@ module Mongoid
         msg = 'This scope requires Mongoid >= 9 and allow_scopes_to_unset_default_scope to be set to true'
         raise msg unless Mongoid.try(:allow_scopes_to_unset_default_scope)
 
-        criteria.remove_scoping(unscoped.where(is_deleted: false))
+        default = unscoped.where(is_deleted: false)
+        default.inclusions = []
+        criteria.remove_scoping(default)
       }
 
       define_model_callbacks :restore
@@ -148,7 +150,7 @@ module Mongoid
     # @since 1.0.0
     def restore(opts = {})
       run_callbacks(:restore) do
-        _paranoia_update({ '$unset' => { paranoid_field => true }, '$set' => { paranoid_flag => false } })
+        _paranoia_update('$unset' => { paranoid_field => true }, '$set' => { paranoid_flag => false })
         attributes.delete('deleted_at')
         @destroyed = self.is_deleted = false
         restore_relations if opts[:recursive]

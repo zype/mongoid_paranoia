@@ -126,6 +126,10 @@ describe Mongoid::Paranoia do
     it "returns the deleted documents" do
       expect(with_deleted).to eq(posts)
     end
+
+    it "keeps eager loading chained before it" do
+      expect(ParanoidPost.includes(:person).with_deleted.inclusions.map(&:name)).to eq([:person])
+    end
   end
 
   describe "#destroy!" do
