@@ -3,8 +3,7 @@
 module Mongoid
   module Paranoia
     class Configuration
-      attr_accessor :paranoid_field
-      attr_accessor :paranoid_flag
+      attr_accessor :paranoid_field, :paranoid_flag
 
       def initialize
         @paranoid_field = :deleted_at

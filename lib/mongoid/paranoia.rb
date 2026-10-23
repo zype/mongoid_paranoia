@@ -148,7 +148,7 @@ module Mongoid
     # @since 1.0.0
     def restore(opts = {})
       run_callbacks(:restore) do
-        _paranoia_update({'$unset' => { paranoid_field => true }, '$set' => { paranoid_flag => false }})
+        _paranoia_update({ '$unset' => { paranoid_field => true }, '$set' => { paranoid_flag => false } })
         attributes.delete('deleted_at')
         @destroyed = self.is_deleted = false
         restore_relations if opts[:recursive]

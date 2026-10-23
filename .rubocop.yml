@@ -41,6 +41,11 @@ Style/DocumentDynamicEvalDefinition:
 Style/DoubleNegation:
   Enabled: false
 
+Style/OneClassPerFile:
+  Exclude:
+    - 'lib/mongoid/paranoia/monkey_patches.rb'
+    - 'perf/scope.rb'
+
 Style/OptionalBooleanParameter:
   Enabled: false
 
