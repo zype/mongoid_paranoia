@@ -48,7 +48,7 @@ describe Mongoid::Paranoia do
   describe ".scoped" do
 
     it "returns a scoped criteria" do
-      expect(ParanoidPost.scoped.selector).to eq({ "deleted_at" => nil })
+      expect(ParanoidPost.scoped.selector).to eq({ "is_deleted" => false })
     end
   end
 
@@ -865,7 +865,7 @@ describe Mongoid::Paranoia do
     end
 
     it "returns a scoped criteria" do
-      expect(scoped.selector).to eq({ "deleted_at" => nil })
+      expect(scoped.selector).to eq({ "is_deleted" => false })
     end
   end
 

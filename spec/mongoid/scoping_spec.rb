@@ -10,9 +10,9 @@ describe Mongoid::Criteria::Scopable do
         Fish.fresh
       end
 
-      it "includes the deleted_at criteria in the selector" do
+      it "includes the is_deleted criteria in the selector" do
         expect(criteria.selector).to eq({
-          "deleted_at" => nil, "fresh" => true
+          "fresh" => true, "is_deleted" => false
         })
       end
     end
@@ -23,7 +23,7 @@ describe Mongoid::Criteria::Scopable do
         Fish.unscoped.fresh
       end
 
-      it "does not include the deleted_at in the selector" do
+      it "does not include the is_deleted criteria in the selector" do
         expect(criteria.selector).to eq({ "fresh" => true })
       end
     end
@@ -34,9 +34,9 @@ describe Mongoid::Criteria::Scopable do
         Fish.deleted.fresh
       end
 
-      it "includes the deleted_at $ne criteria in the selector" do
+      it "includes the is_deleted true criteria in the selector" do
         expect(criteria.selector).to eq({
-          "deleted_at" => { "$ne" => nil }, "fresh" => true
+          "fresh" => true, "is_deleted" => true
         })
       end
     end
