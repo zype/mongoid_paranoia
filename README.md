@@ -13,7 +13,8 @@ from the [Mongoid 3.0.0-stable branch](https://github.com/mongodb/mongoid/tree/3
 
 ## Version Support
 
-* The current release is tested against Mongoid 7.3, 8 and 9, and Ruby 3.3 and later.
+* The current release supports Mongoid 7.3 and later, and Ruby 3.3 and later.
+* CI tests Mongoid 7.4.3 and the latest 7.x, 8.x and 9.x releases on Ruby 3.3, 3.4 and 4.0.
 * Earlier Mongoid and Ruby versions are supported on earlier releases.
 
 ## Installation
