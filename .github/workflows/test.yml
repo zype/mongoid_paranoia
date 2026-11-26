@@ -13,13 +13,22 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: ['3.3', '3.4']
+        ruby: ['3.3', '3.4', '4.0']
         mongoid: [7, 8, 9]
         mongodb: ['7.0', '8.0']
         experimental: [false]
         include:
+          # zype-core pins Mongoid 7.4.3
+          - ruby: '3.3'
+            mongoid: '7.4.3'
+            mongodb: '8.0'
+            experimental: false
+          - ruby: '3.4'
+            mongoid: '7.4.3'
+            mongodb: '8.0'
+            experimental: false
           - ruby: '4.0'
-            mongoid: 9
+            mongoid: '7.4.3'
             mongodb: '8.0'
             experimental: false
           - ruby: head
