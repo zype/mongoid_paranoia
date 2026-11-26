@@ -13,7 +13,7 @@ from the [Mongoid 3.0.0-stable branch](https://github.com/mongodb/mongoid/tree/3
 
 ## Version Support
 
-* The current release is compatible with Mongoid 7.3 and later, and Ruby 2.7 and later.
+* The current release is tested against Mongoid 7.3, 8 and 9, and Ruby 3.3 and later.
 * Earlier Mongoid and Ruby versions are supported on earlier releases.
 
 ## Installation
@@ -50,6 +50,19 @@ You can also access all documents (both deleted and non-deleted) at any time by 
 
 ```ruby
 Person.unscoped.all # Returns all documents, both deleted and non-deleted
+```
+
+Unlike `unscoped`, which removes *all* scoping, `with_deleted` removes only the soft-delete default scope, so it can be chained onto an existing query to include soft-deleted documents:
+
+```ruby
+Person.where(name: "Bob").with_deleted # Returns matching documents, both deleted and non-deleted
+```
+
+The `with_deleted` scope requires Mongoid 9 or later with `allow_scopes_to_unset_default_scope` enabled (it becomes the default in Mongoid 10):
+
+```ruby
+# config/initializers/mongoid.rb
+Mongoid.allow_scopes_to_unset_default_scope = true
 ```
 
 You can also configure the paranoid field naming on a global basis.  Within the context of a Rails app this is done via an initializer.
